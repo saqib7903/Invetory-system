@@ -10,6 +10,8 @@ const Customers = () => {
   
   // Modal & Form state
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState(null);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -73,15 +75,23 @@ const Customers = () => {
     }
   };
 
-  const handleDelete = async (id, name) => {
-    if (!window.confirm(`Are you absolutely sure you want to permanently delete customer "${name}"?\nWARNING: This will cancel/delete any active orders associated with this customer.`)) return;
-    
+  const handleDeleteClick = (id, name) => {
+    setCustomerToDelete({ id, name });
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!customerToDelete || submitting) return;
     try {
-      await customerAPI.delete(id);
-      toast.success('Customer Removed', `Permanently deleted customer: ${name}`);
+      setSubmitting(true);
+      await customerAPI.delete(customerToDelete.id);
+      toast.success('Customer Removed', `Permanently deleted customer: ${customerToDelete.name}`);
+      setIsConfirmOpen(false);
       fetchCustomers();
     } catch (err) {
       toast.error('Removal Failure', err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -144,7 +154,7 @@ const Customers = () => {
                     <td>{c.phone ? c.phone : <em style={{ color: 'var(--text-muted)' }}>Not Provided</em>}</td>
                     <td>{new Date(c.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</td>
                     <td style={{ textAlign: 'right' }}>
-                      <button className="btn-danger" onClick={() => handleDelete(c.id, c.full_name)}>
+                      <button className="btn-danger" onClick={() => handleDeleteClick(c.id, c.full_name)} disabled={submitting}>
                         🗑️ Delete
                       </button>
                     </td>
@@ -207,6 +217,36 @@ const Customers = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Non-blocking custom modal for deleting customer to prevent INP warning */}
+      <Modal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        title="⚠️ Confirm Customer Removal"
+      >
+        <div style={{ padding: '0.5rem 0' }}>
+          <p style={{ color: 'var(--text-main)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+            Are you absolutely sure you want to permanently delete customer <strong>"{customerToDelete?.name}"</strong>?
+            <br />
+            <strong style={{ color: 'var(--color-danger)' }}>
+              WARNING: This will cancel and permanently delete any active orders associated with this customer.
+            </strong>
+          </p>
+          <div className="modal-actions">
+            <button type="button" className="btn-secondary" onClick={() => setIsConfirmOpen(false)} disabled={submitting}>
+              No, Keep Customer
+            </button>
+            <button 
+              type="button" 
+              className="btn-danger" 
+              onClick={handleConfirmDelete} 
+              disabled={submitting}
+            >
+              {submitting ? 'Removing...' : 'Yes, Delete Customer'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

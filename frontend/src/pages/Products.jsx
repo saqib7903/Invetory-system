@@ -10,6 +10,8 @@ const Products = () => {
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null); // Null for create, Product object for edit
   
   // Form states
@@ -116,14 +118,23 @@ const Products = () => {
     }
   };
 
-  const handleDelete = async (id, name) => {
-    if (!window.confirm(`Are you absolutely sure you want to permanently delete product "${name}"?`)) return;
+  const handleDeleteClick = (id, name) => {
+    setProductToDelete({ id, name });
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!productToDelete || submitting) return;
     try {
-      await productAPI.delete(id);
-      toast.success('Product Deleted', `Removed "${name}" from stock records.`);
+      setSubmitting(true);
+      await productAPI.delete(productToDelete.id);
+      toast.success('Product Deleted', `Removed "${productToDelete.name}" from stock records.`);
+      setIsConfirmOpen(false);
       fetchProducts();
     } catch (err) {
       toast.error('Deletion Failure', err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -199,7 +210,7 @@ const Products = () => {
                         <button className="btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }} onClick={() => openEditModal(p)}>
                           ✏️ Edit
                         </button>
-                        <button className="btn-danger" onClick={() => handleDelete(p.id, p.name)}>
+                        <button className="btn-danger" onClick={() => handleDeleteClick(p.id, p.name)} disabled={submitting}>
                           🗑️ Delete
                         </button>
                       </div>
@@ -298,6 +309,36 @@ const Products = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Non-blocking custom modal for deleting product to prevent INP warning */}
+      <Modal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        title="⚠️ Confirm Product Deletion"
+      >
+        <div style={{ padding: '0.5rem 0' }}>
+          <p style={{ color: 'var(--text-main)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+            Are you absolutely sure you want to permanently delete product <strong>"{productToDelete?.name}"</strong>?
+            <br />
+            <strong style={{ color: 'var(--color-danger)' }}>
+              WARNING: This action is irreversible. All warehouse records for this product will be permanently removed.
+            </strong>
+          </p>
+          <div className="modal-actions">
+            <button type="button" className="btn-secondary" onClick={() => setIsConfirmOpen(false)} disabled={submitting}>
+              No, Keep Product
+            </button>
+            <button 
+              type="button" 
+              className="btn-danger" 
+              onClick={handleConfirmDelete} 
+              disabled={submitting}
+            >
+              {submitting ? 'Deleting...' : 'Yes, Delete Product'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

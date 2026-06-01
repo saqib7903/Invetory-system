@@ -12,7 +12,9 @@ const Orders = () => {
   // Modals state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderToCancel, setOrderToCancel] = useState(null);
 
   // Form states
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
@@ -185,13 +187,12 @@ const Orders = () => {
 
   const handleCancelOrder = async (id) => {
     if (submitting) return;
-    if (!window.confirm('Are you sure you want to cancel and delete this order?\nNote: All stock quantities will automatically be returned to the warehouse inventory.')) return;
-    
     try {
       setSubmitting(true);
       await orderAPI.delete(id);
       toast.success('Order Cancelled', 'Order deleted and stock levels restored successfully.');
       if (isDetailOpen) setIsDetailOpen(false);
+      setIsConfirmOpen(false);
       loadData(true);
     } catch (err) {
       toast.error('Cancellation Failed', err.message);
@@ -251,7 +252,7 @@ const Orders = () => {
                         <button className="btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }} onClick={() => openDetailModal(o)} disabled={submitting}>
                           👁️ Inspect Invoice
                         </button>
-                        <button className="btn-danger" onClick={() => handleCancelOrder(o.id)} disabled={submitting}>
+                        <button className="btn-danger" onClick={() => { setOrderToCancel(o.id); setIsConfirmOpen(true); }} disabled={submitting}>
                           🗑️ Cancel
                         </button>
                       </div>
@@ -316,7 +317,7 @@ const Orders = () => {
             </div>
 
             <div className="modal-actions">
-              <button className="btn-danger" style={{ marginRight: 'auto' }} onClick={() => handleCancelOrder(selectedOrder.id)} disabled={submitting}>
+              <button className="btn-danger" style={{ marginRight: 'auto' }} onClick={() => { setOrderToCancel(selectedOrder.id); setIsConfirmOpen(true); }} disabled={submitting}>
                 {submitting ? 'Voiding...' : '🚨 Void & Refund Order'}
               </button>
               <button className="btn-secondary" onClick={() => setIsDetailOpen(false)} disabled={submitting}>
@@ -416,6 +417,36 @@ const Orders = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Non-blocking custom modal for cancelling orders to prevent INP warning */}
+      <Modal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        title="⚠️ Confirm Order Cancellation"
+      >
+        <div style={{ padding: '0.5rem 0' }}>
+          <p style={{ color: 'var(--text-main)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+            Are you sure you want to cancel and delete this order?
+            <br />
+            <strong style={{ color: 'var(--color-warning)' }}>
+              Note: All stock quantities will automatically be returned to the warehouse inventory.
+            </strong>
+          </p>
+          <div className="modal-actions">
+            <button type="button" className="btn-secondary" onClick={() => setIsConfirmOpen(false)} disabled={submitting}>
+              No, Keep Order
+            </button>
+            <button 
+              type="button" 
+              className="btn-danger" 
+              onClick={() => handleCancelOrder(orderToCancel)} 
+              disabled={submitting}
+            >
+              {submitting ? 'Voiding...' : 'Yes, Cancel Order'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
