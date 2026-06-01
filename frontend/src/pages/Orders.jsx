@@ -342,7 +342,6 @@ const Orders = () => {
               value={selectedCustomerId}
               onChange={(e) => setSelectedCustomerId(e.target.value)}
               required
-              style={{ background: 'rgba(10, 10, 15, 0.8)', border: '1px solid var(--border-color)' }}
             >
               <option value="" disabled>-- Select a registered customer --</option>
               {customers.map((c) => (
@@ -368,7 +367,7 @@ const Orders = () => {
                   value={row.product_id}
                   onChange={(e) => handleRowChange(index, 'product_id', e.target.value)}
                   required
-                  style={{ flexGrow: 2, background: 'rgba(10, 10, 15, 0.8)' }}
+                  style={{ flexGrow: 2 }}
                 >
                   <option value="" disabled>-- Select Product --</option>
                   {products.map((p) => (

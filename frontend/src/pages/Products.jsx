@@ -263,7 +263,7 @@ const Products = () => {
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
                 required
-                style={{ width: '110px', margin: 0, background: 'rgba(10, 10, 15, 0.8)', border: '1px solid var(--border-color)' }}
+                style={{ width: '110px', margin: 0 }}
               >
                 <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>

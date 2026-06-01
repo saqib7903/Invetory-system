@@ -854,6 +854,11 @@ button, input, select, textarea {
   color: #0f172a;
 }
 
+select.input-field option {
+  background-color: #0b0d16;
+  color: #f3f4f6;
+}
+
 /* Rotating Spin Icon Animation */
 .refresh-icon {
   display: inline-block;
