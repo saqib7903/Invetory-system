@@ -92,7 +92,7 @@ const Customers = () => {
   );
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <div className="page-header">
         <div>
           <h1>Customer Pipeline</h1>

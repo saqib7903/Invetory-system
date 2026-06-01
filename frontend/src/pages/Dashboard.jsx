@@ -66,7 +66,7 @@ const Dashboard = ({ onNavigate }) => {
   }
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <div className="page-header">
         <div>
           <h1>System Dashboard</h1>

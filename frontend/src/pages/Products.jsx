@@ -133,7 +133,7 @@ const Products = () => {
   );
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <div className="page-header">
         <div>
           <h1>Stock Inventory</h1>

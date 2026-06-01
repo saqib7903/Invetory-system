@@ -201,7 +201,7 @@ const Orders = () => {
   };
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <div className="page-header">
         <div>
           <h1>Order Invoices</h1>
