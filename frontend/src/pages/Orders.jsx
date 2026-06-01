@@ -47,9 +47,11 @@ const Orders = () => {
     return 'USD';
   };
 
-  const loadData = async () => {
+  const loadData = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent || orders.length === 0) {
+        setLoading(true);
+      }
       const [ordersData, customersData, productsData] = await Promise.all([
         orderAPI.getAll(),
         customerAPI.getAll(),
@@ -66,7 +68,7 @@ const Orders = () => {
   };
 
   useEffect(() => {
-    loadData();
+    loadData(false);
   }, []);
 
   const openCreateModal = () => {
@@ -182,15 +184,19 @@ const Orders = () => {
   };
 
   const handleCancelOrder = async (id) => {
+    if (submitting) return;
     if (!window.confirm('Are you sure you want to cancel and delete this order?\nNote: All stock quantities will automatically be returned to the warehouse inventory.')) return;
     
     try {
+      setSubmitting(true);
       await orderAPI.delete(id);
       toast.success('Order Cancelled', 'Order deleted and stock levels restored successfully.');
       if (isDetailOpen) setIsDetailOpen(false);
-      loadData();
+      loadData(true);
     } catch (err) {
       toast.error('Cancellation Failed', err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -242,10 +248,10 @@ const Orders = () => {
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
-                        <button className="btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }} onClick={() => openDetailModal(o)}>
+                        <button className="btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }} onClick={() => openDetailModal(o)} disabled={submitting}>
                           👁️ Inspect Invoice
                         </button>
-                        <button className="btn-danger" onClick={() => handleCancelOrder(o.id)}>
+                        <button className="btn-danger" onClick={() => handleCancelOrder(o.id)} disabled={submitting}>
                           🗑️ Cancel
                         </button>
                       </div>
@@ -310,10 +316,10 @@ const Orders = () => {
             </div>
 
             <div className="modal-actions">
-              <button className="btn-danger" style={{ marginRight: 'auto' }} onClick={() => handleCancelOrder(selectedOrder.id)}>
-                🚨 Void & Refund Order
+              <button className="btn-danger" style={{ marginRight: 'auto' }} onClick={() => handleCancelOrder(selectedOrder.id)} disabled={submitting}>
+                {submitting ? 'Voiding...' : '🚨 Void & Refund Order'}
               </button>
-              <button className="btn-secondary" onClick={() => setIsDetailOpen(false)}>
+              <button className="btn-secondary" onClick={() => setIsDetailOpen(false)} disabled={submitting}>
                 Close Invoice
               </button>
             </div>
