@@ -1,0 +1,21 @@
+# System and IDE Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# Backend specific ignore paths
+backend/.env
+backend/__pycache__/
+backend/*.pyc
+backend/local_inventory.db
+backend/venv/
+backend/.venv/
+
+# Frontend specific ignore paths
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.production
