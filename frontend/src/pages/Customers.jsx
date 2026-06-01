@@ -13,6 +13,7 @@ const Customers = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   
   const toast = useToast();
 
@@ -36,12 +37,14 @@ const Customers = () => {
     setFullName('');
     setEmail('');
     setPhone('');
+    setSubmitting(false);
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (submitting) return;
     if (!fullName.trim()) return toast.error('Validation Error', 'Full Name is required.');
     if (!email.trim()) return toast.error('Validation Error', 'Email Address is required.');
     
@@ -58,12 +61,15 @@ const Customers = () => {
     };
 
     try {
+      setSubmitting(true);
       await customerAPI.create(payload);
       toast.success('Customer Registered', `Successfully added customer: ${payload.full_name}`);
       setIsModalOpen(false);
       fetchCustomers();
     } catch (err) {
       toast.error('Registration Failure', err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -193,11 +199,11 @@ const Customers = () => {
           </div>
 
           <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>
+            <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)} disabled={submitting}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary">
-              Register Customer
+            <button type="submit" className="btn-primary" disabled={submitting}>
+              {submitting ? 'Registering...' : 'Register Customer'}
             </button>
           </div>
         </form>

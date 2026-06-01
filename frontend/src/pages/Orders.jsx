@@ -17,6 +17,7 @@ const Orders = () => {
   // Form states
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [orderRows, setOrderRows] = useState([{ product_id: '', quantity: 1, maxStock: 9999 }]);
+  const [submitting, setSubmitting] = useState(false);
 
   const toast = useToast();
 
@@ -77,6 +78,7 @@ const Orders = () => {
     }
     setSelectedCustomerId('');
     setOrderRows([{ product_id: '', quantity: 1, maxStock: 9999 }]);
+    setSubmitting(false);
     setIsCreateOpen(true);
   };
 
@@ -125,6 +127,8 @@ const Orders = () => {
   const handleCreateOrder = async (e) => {
     e.preventDefault();
 
+    if (submitting) return;
+
     if (!selectedCustomerId) {
       return toast.error('Validation Error', 'Please select a customer.');
     }
@@ -153,7 +157,7 @@ const Orders = () => {
         return toast.error('Stock Exhausted', `Only ${product.quantity_in_stock} units of '${product.name}' are available.`);
       }
 
-      items.append = items.push({
+      items.push({
         product_id: pId,
         quantity: row.quantity,
       });
@@ -165,12 +169,15 @@ const Orders = () => {
     };
 
     try {
+      setSubmitting(true);
       await orderAPI.create(payload);
       toast.success('Order Placed', 'Inventory decremented and invoice generated.');
       setIsCreateOpen(false);
       loadData();
     } catch (err) {
       toast.error('Transaction Failed', err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -395,11 +402,11 @@ const Orders = () => {
           </div>
 
           <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={() => setIsCreateOpen(false)}>
+            <button type="button" className="btn-secondary" onClick={() => setIsCreateOpen(false)} disabled={submitting}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary">
-              🔒 Commit Checkout
+            <button type="submit" className="btn-primary" disabled={submitting}>
+              {submitting ? 'Committing...' : '🔒 Commit Checkout'}
             </button>
           </div>
         </form>

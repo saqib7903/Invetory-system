@@ -18,6 +18,7 @@ const Products = () => {
   const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(0);
   const [currency, setCurrency] = useState('USD');
+  const [submitting, setSubmitting] = useState(false);
   
   const toast = useToast();
 
@@ -61,6 +62,7 @@ const Products = () => {
     setPrice(0.0);
     setQuantity(0);
     setCurrency('USD');
+    setSubmitting(false);
     setIsModalOpen(true);
   };
 
@@ -71,12 +73,15 @@ const Products = () => {
     setPrice(product.price);
     setQuantity(product.quantity_in_stock);
     setCurrency(product.currency || 'USD');
+    setSubmitting(false);
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (submitting) return;
+
     // Front-end validations
     if (!name.trim()) return toast.error('Validation Error', 'Product Name cannot be empty.');
     if (!sku.trim()) return toast.error('Validation Error', 'Product SKU cannot be empty.');
@@ -92,6 +97,7 @@ const Products = () => {
     };
 
     try {
+      setSubmitting(true);
       if (editingProduct) {
         // Handle Update
         await productAPI.update(editingProduct.id, payload);
@@ -105,6 +111,8 @@ const Products = () => {
       fetchProducts();
     } catch (err) {
       toast.error('Save Failure', err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -282,11 +290,11 @@ const Products = () => {
           </div>
 
           <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>
+            <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)} disabled={submitting}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary">
-              {editingProduct ? 'Save Changes' : 'Register Product'}
+            <button type="submit" className="btn-primary" disabled={submitting}>
+              {submitting ? (editingProduct ? 'Saving Changes...' : 'Registering...') : (editingProduct ? 'Save Changes' : 'Register Product')}
             </button>
           </div>
         </form>

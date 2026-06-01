@@ -83,3 +83,4 @@ class DashboardStats(BaseModel):
     total_customers: int
     total_orders: int
     low_stock_products: List[ProductOut]
+    top_products: List[ProductOut] = []
