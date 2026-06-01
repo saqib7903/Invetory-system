@@ -753,3 +753,59 @@ button, input, select, textarea {
   box-shadow: 0 8px 32px rgba(var(--color-primary-rgb), 0.1);
 }
 
+/* Light Theme Element Overrides for Perfect Legibility */
+[data-theme="light"] .sidebar-logo {
+  color: var(--text-main);
+}
+
+[data-theme="light"] .nav-item:hover, 
+[data-theme="light"] .nav-item.active {
+  color: var(--text-main);
+  background: rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="light"] .nav-item.active {
+  background: rgba(2, 132, 199, 0.1);
+}
+
+[data-theme="light"] .nexus-table th {
+  color: var(--text-main);
+  background: rgba(15, 23, 42, 0.03);
+}
+
+[data-theme="light"] .input-field {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="light"] .btn-secondary {
+  color: var(--text-main);
+  background: rgba(15, 23, 42, 0.05);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: rgba(15, 23, 42, 0.09);
+  color: var(--text-main);
+}
+
+[data-theme="light"] .toast {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1);
+}
+
+[data-theme="light"] .modal-close:hover {
+  color: var(--text-main);
+}
+
+[data-theme="light"] .modal-title {
+  color: var(--text-main);
+}
+
+[data-theme="light"] select.input-field option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
