@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 const Dashboard = ({ onNavigate }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const toast = useToast();
 
   const formatCurrency = (price, currency) => {
@@ -24,20 +25,25 @@ const Dashboard = ({ onNavigate }) => {
     return `${symbol}${price.toFixed(2)}`;
   };
 
-  const fetchStats = async () => {
+  const fetchStats = async (isManual = false) => {
     try {
-      setLoading(true);
+      if (isManual && stats) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       const data = await dashboardAPI.getStats();
       setStats(data);
     } catch (err) {
       toast.error('Dashboard Error', err.message);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchStats();
+    fetchStats(false);
   }, []);
 
   if (loading) {
@@ -66,7 +72,15 @@ const Dashboard = ({ onNavigate }) => {
           <h1>System Dashboard</h1>
           <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>Overview of live warehouse, pipelines, and orders.</p>
         </div>
-        <button className="btn-primary" onClick={fetchStats}>🔄 Refresh Metrics</button>
+        <button 
+          className="btn-primary" 
+          onClick={() => fetchStats(true)}
+          disabled={refreshing}
+          style={{ gap: '0.75rem' }}
+        >
+          <span className={`refresh-icon ${refreshing ? 'spinning' : ''}`} style={{ fontSize: '1.15rem' }}>🔄</span>
+          {refreshing ? 'Syncing...' : 'Refresh Metrics'}
+        </button>
       </div>
 
       {/* Grid of Key Stats */}
