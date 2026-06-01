@@ -120,32 +120,35 @@ const Dashboard = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* Low Stock Panel */}
+      {/* Replenishment & Visual Telemetry Panel */}
       <div className="grid-content">
-        <div className="col-full glass-card">
+        {/* Critical Warnings on Left (col-8) */}
+        <div className="col-8 glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h2 className="text-neon-cyan">⚠️ Critical Stock Replenishment Warnings</h2>
-            <span className="badge badge-low-stock">Inventory Alert Threshold &lt; 10 Units</span>
+            <h2 className="text-neon-cyan">⚠️ Replenishment Warnings</h2>
+            <span className="badge badge-low-stock">Inventory Alert &lt; 10 Units</span>
           </div>
 
           {stats.low_stock_products.length === 0 ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.1)', borderRadius: '8px' }}>
-              🎉 Excellent! All products are well-stocked and above replenishment limits.
+            <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.1)', borderRadius: '8px', border: '1px dashed var(--border-color)', display: 'flex', flexDirection: 'column', justifyContent: 'center', flexGrow: 1 }}>
+              <p style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎉</p>
+              <p style={{ fontWeight: 600, color: 'var(--color-success)' }}>All systems optimal!</p>
+              <p style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>No products require critical replenishment at this time.</p>
             </div>
           ) : (
-            <div className="table-wrapper">
+            <div className="table-wrapper" style={{ flexGrow: 1 }}>
               <table className="nexus-table">
                 <thead>
                   <tr>
-                    <th>Product Name</th>
+                    <th>Product</th>
                     <th>SKU/Code</th>
                     <th>Price</th>
-                    <th>Quantity in Stock</th>
-                    <th>Replenishment Status</th>
+                    <th>Quantity</th>
+                    <th>Replenish</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {stats.low_stock_products.map((product) => (
+                  {stats.low_stock_products.slice(0, 5).map((product) => (
                     <tr key={product.id}>
                       <td><strong>{product.name}</strong></td>
                       <td><code style={{ color: '#c084fc' }}>{product.sku}</code></td>
@@ -153,7 +156,7 @@ const Dashboard = ({ onNavigate }) => {
                       <td style={{ color: 'var(--color-error)', fontWeight: 600 }}>{product.quantity_in_stock}</td>
                       <td>
                         <span className="badge badge-low-stock">
-                          {product.quantity_in_stock === 0 ? '🚫 Out of Stock' : '⚠️ Low Stock'}
+                          {product.quantity_in_stock === 0 ? '🚫 Out' : '⚠️ Low'}
                         </span>
                       </td>
                     </tr>
@@ -162,6 +165,67 @@ const Dashboard = ({ onNavigate }) => {
               </table>
             </div>
           )}
+        </div>
+
+        {/* Visual Glowing Chart on Right (col-4) */}
+        <div className="col-4 glass-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <h2 className="text-neon-purple" style={{ marginBottom: '0.25rem' }}>📊 Stock Telemetry</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.825rem', marginBottom: '1.5rem' }}>Real-time warehouse safety levels.</p>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexGrow: 1, minHeight: '190px', padding: '1rem 0' }}>
+            {stats.low_stock_products.length === 0 ? (
+              /* Beautiful Circular Progress Gauge representing 100% health */
+              <div style={{ position: 'relative', width: '150px', height: '150px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <svg width="150" height="150" viewBox="0 0 150 150" style={{ transform: 'rotate(-90deg)' }}>
+                  <circle cx="75" cy="75" r="60" fill="none" stroke="var(--border-color)" strokeWidth="10" />
+                  <circle cx="75" cy="75" r="60" fill="none" stroke="var(--color-success)" strokeWidth="10" 
+                    strokeDasharray="377" strokeDashoffset="0"
+                    style={{ filter: 'drop-shadow(0 0 6px rgba(16, 185, 129, 0.4))', transition: 'stroke-dashoffset 0.8s ease' }}
+                  />
+                </svg>
+                <div style={{ position: 'absolute', textAlign: 'center' }}>
+                  <p style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--color-success)', lineHeight: 1 }}>100%</p>
+                  <p style={{ fontSize: '0.675rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.25rem' }}>Optimal</p>
+                </div>
+              </div>
+            ) : (
+              /* Glowing Horizontal Bar Chart detailing critical restock levels */
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                {stats.low_stock_products.slice(0, 4).map((product) => {
+                  const percent = Math.min(100, Math.max(6, (product.quantity_in_stock / 10) * 100));
+                  const isZero = product.quantity_in_stock === 0;
+                  return (
+                    <div key={product.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                        <span style={{ fontWeight: 600, maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.name}</span>
+                        <span style={{ color: isZero ? 'var(--color-error)' : 'var(--color-warning)', fontWeight: 700 }}>
+                          {product.quantity_in_stock} / 10
+                        </span>
+                      </div>
+                      <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.15)', borderRadius: '999px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                        <div 
+                          style={{ 
+                            width: `${percent}%`, 
+                            height: '100%', 
+                            background: isZero ? 'var(--color-error)' : 'var(--color-warning)', 
+                            borderRadius: '999px',
+                            boxShadow: isZero ? '0 0 8px rgba(239, 68, 68, 0.4)' : '0 0 8px rgba(245, 158, 11, 0.4)',
+                            transition: 'width 0.5s ease-out'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem', width: '100%' }}>
+            Telemetry linked dynamically to Postgres DB
+          </div>
         </div>
       </div>
     </div>
